@@ -12,32 +12,23 @@ from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import string
 
-# Disable extra TF logs (optional)
 os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 
 print("Program started...")
 
-# -----------------------------------------------------
-# 1. LOAD AND PREPROCESS DATA
-# -----------------------------------------------------
-
 with open("shakespeare.txt", "r", encoding="utf-8") as file:
     text = file.read()
 
-# lowercase
 text = text.lower()
 
-# remove punctuation
 text = text.translate(str.maketrans("", "", string.punctuation))
 
-# tokenize text (word-level)
 tokenizer = Tokenizer()
 tokenizer.fit_on_texts([text])
 
 total_words = len(tokenizer.word_index) + 1
 print("Total unique words:", total_words)
 
-# create input sequences
 input_sequences = []
 
 for line in text.split("\n"):
@@ -46,7 +37,6 @@ for line in text.split("\n"):
     for i in range(1, len(token_list)):
         input_sequences.append(token_list[:i + 1])
 
-# pad sequences
 max_sequence_len = max(len(seq) for seq in input_sequences)
 
 input_sequences = pad_sequences(
@@ -55,16 +45,11 @@ input_sequences = pad_sequences(
     padding="pre"
 )
 
-# split input and output
 X = input_sequences[:, :-1]
-y = input_sequences[:, -1]   # IMPORTANT: keep labels as integers
+y = input_sequences[:, -1]
 
 print("Input shape:", X.shape)
 print("Output shape:", y.shape)
-
-# -----------------------------------------------------
-# 2. MODEL DESIGN
-# -----------------------------------------------------
 
 model = Sequential([
     Embedding(total_words, 64, input_length=max_sequence_len - 1),
@@ -79,10 +64,6 @@ model.compile(
 )
 
 model.summary()
-
-# -----------------------------------------------------
-# 3. MODEL TRAINING
-# -----------------------------------------------------
 
 early_stop = EarlyStopping(
     monitor="loss",
@@ -101,9 +82,6 @@ model.fit(
 
 print("Training completed...")
 
-# -----------------------------------------------------
-# 4. TEXT GENERATION FUNCTION
-# -----------------------------------------------------
 
 def generate_text(seed_text, next_words=30):
     for _ in range(next_words):
@@ -123,9 +101,6 @@ def generate_text(seed_text, next_words=30):
 
     return seed_text
 
-# -----------------------------------------------------
-# 5. SAMPLE TEXT OUTPUT
-# -----------------------------------------------------
 
 print("\n--- GENERATED TEXT SAMPLE 1 ---")
 print(generate_text("to be or not to be", 40))
